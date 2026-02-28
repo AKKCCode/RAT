@@ -1,8 +1,6 @@
 import os
 import socket
 
-from PIL import ImageGrab
-
 TARGET = "192.168.2.63"
 
 TARGET_PORT = 777
